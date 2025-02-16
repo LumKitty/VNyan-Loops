@@ -19,7 +19,6 @@ While the loop index is stored into the specified decimal it is NOT read. If you
 number 1 - Number of times we have looped  
 number 2 - The current loop index  
 number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
-text 1 - Value of of decimal we're checking
 
 This is rougly equivalent do doing the following in (Visual) Basic
 ```
