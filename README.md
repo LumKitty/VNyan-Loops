@@ -1,20 +1,42 @@
 # For, While and Until loops for VNyan
+Adds triggers to VNyan to do loops without having to manually implement them in a node graph.  
 
+## Installation
+Download the attached zip file and unpack to VNyan\Items\Assemblies
+
+## For
+```_lum_loop_for``` - Loop from one number to another  
+text 1 (optional) - Name of the decimal to store the loop index into  
+text 2 - Trigger to call every time we loop  
+text 3 - Trigger to call once we exit the loop  
+number 1 - Start value. We will start looping from this number
+number 2 - Target value. We will finish looping at this number
+number 3 (optional) - Increment - we will add this value to the counter every loop (defaults to either 1 or -1 if unspecified or an invalid value is given)
+
+While the loop index is stored into the specified decimal it is NOT read. If you need to mess with the index at runtime, use a while loop instead.
+
+## Callback 
+number 1 - Number of times we have looped  
+number 2 - The current loop index  
+number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
+text 1 - Value of of decimal we're checking
+
+## While / Until
 ```_lum_loop_whileLT``` - While specified decimal is less than specified value (exits once greater than or equal)  
 text 1 - Name of the decimal to check  
-text 2 - Trigger to call while condition is true  
+text 2 - Trigger to call repeatedly while condition is true  
 text 3 - Trigger to call once condition is false and loop exited  
 number 1 - Target value. Will loop until decimal is no-longer less than this  
 number 2 - Divisor. If you need to compare a specific decimal set this. We will divide by it e.g. 1/10 = 0.1  
 number 3 - Session ID, will be passed to the triggers we call  
 
-Callback:  
+### Callback 
 number 1 - Number of times we have looped  
-number 2 -
+number 2 - 
   0 - We are looping
   1 - This is a call to the exit trigger
   2 - This is a call to the exit trigger because TTL expired
-number 3 - Session ID
+number 3 - Session ID  
 text 1 - Value of of decimal we're checking
 
 ```_lum_loop_whileLE``` - Same but we check less than or equal  
@@ -30,6 +52,10 @@ text 1 - Value of of decimal we're checking
 ```_lum_loop_untilNE```  
 
 ## Delay and TTL
+While and Until loops have a maximum number of times they can run until they force exit. This can be changed by appending extra parameters
 Call with e.g. ```_lum_loop_whileLE;delay=69;ttl=420```
-Delay - in ms between loops
-TTL - number of loops before we kill it off anyway
+Delay - in ms between loops (default 1000ms i.e. 1 second)
+TTL - number of loops before we kill it off anyway (set to -1 to disable (at your own risk)
+
+## Troubleshooting
+Install my VNyan-Debug plugin from https://github.com/LumKitty/VNyan-Debug to see loop status messages in the console
