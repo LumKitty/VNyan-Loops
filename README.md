@@ -62,7 +62,7 @@ text 1 - Value of of decimal we're checking
 These triggers are roughly equivalent to doing this in (Visual) Basic:
 ```
 # _lum_loop_whileLT
-While (VNyanParam(text1) < num1)
+While (GetVNyanParam(text1) < num1)
   CallVNyan(text2)
 Wend
 CallVNyan(text3)
