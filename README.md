@@ -43,7 +43,7 @@ number 1 - Number of times we have looped
 number 2 - 
   0 - We are looping
   1 - This is a call to the exit trigger
-  2 - This is a call to the exit trigger because TTL expired
+  2 - This is a call to the exit trigger because TTL expired  
 number 3 - Session ID  
 text 1 - Value of of decimal we're checking
 
