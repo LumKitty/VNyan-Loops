@@ -29,6 +29,8 @@ Next N
 CallVNyan(text3)
 ```
 ## ForEach
+The Loops-ForEach-Support.json nodegraph must be imported for these functions to work. Unfortunately VNyan plugins cannot directly access (T)Arrays, so this graph packages them up in a format we can access
+
 ```_lum_loop_foreach``` - Loop through an array  
 text 1 - Name of the array to loop through  
 text 2 - Trigger to call every time we loop  
