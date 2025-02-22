@@ -34,6 +34,7 @@ text 1 - Name of the array to loop through
 text 2 - Trigger to call every time we loop  
 text 3 - Trigger to call once we exit the loop  
 number 1 - Delay in ms between loops, default 1000 (1sec) set to -1 for no delay  
+number 2 - 0 if looping, 1 once done  
 number 3 (optional) - Session ID  
 
 ```_lum_loop_foreacht``` - Loop through a text array  
