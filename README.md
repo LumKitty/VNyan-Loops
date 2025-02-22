@@ -28,6 +28,21 @@ For N = num1 to num2 Step num3
 Next N
 CallVNyan(text3)
 ```
+## ForEach
+```_lum_loop_foreach``` - Loop through an array  
+text 1 - Name of the array to loop through  
+text 2 - Trigger to call every time we loop  
+text 3 - Trigger to call once we exit the loop  
+number 1 - Delay in ms between loops, default 1000 (1sec) set to -1 for no delay  
+number 3 (optional) - Session ID  
+
+```_lum_loop_foreacht``` - Loop through a text array  
+Works exactly the same as ```_lum_loop_foreach```
+
+### Callback 
+text 1 - The decimal from the specified array
+number 1 - Number of times we have looped  
+number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
 
 ## While / Until
 ```_lum_loop_whileLT``` - While specified decimal is less than specified value (exits once greater than or equal)  
