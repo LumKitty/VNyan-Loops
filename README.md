@@ -27,9 +27,9 @@ This is rougly equivalent to doing the following in (Visual) Basic
 ```
 For N = num1 to num2 Step num3
   SetVNyanParam(text1,N)
-  CallVNyan(text2)
+  CallVNyan(text2,N)
 Next N
-CallVNyan(text3)
+CallVNyan(text3,N)
 ```
 ## ForEach
 The Loops-ForEach-Support.json nodegraph must be imported for these functions to work. Unfortunately VNyan plugins cannot directly access (T)Arrays, so this graph packages them up in a format we can access. Unfortunately because of this SessionID and delay parameters cannot be set in the trigger name with a ; This can only be fixed once VNyan supports direct access to (T)Arrays.
@@ -52,7 +52,7 @@ This is roughly equivalent to the following in (Visual) Basic
 ```
 Dim Array as Float() = GetVNyanArray(Text1)
 For Each Value in Array
-    CallVNyan(Text2)
+    CallVNyan(Text2, Value)
 Next
 CallVNyan(Text3)
 ```
