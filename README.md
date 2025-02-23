@@ -23,7 +23,7 @@ number 1 - Number of times we have looped
 number 2 - The current loop index  
 number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
 
-This is rougly equivalent do doing the following in (Visual) Basic
+This is rougly equivalent to doing the following in (Visual) Basic
 ```
 For N = num1 to num2 Step num3
   SetVNyanParam(text1,N)
@@ -32,23 +32,33 @@ Next N
 CallVNyan(text3)
 ```
 ## ForEach
-The Loops-ForEach-Support.json nodegraph must be imported for these functions to work. Unfortunately VNyan plugins cannot directly access (T)Arrays, so this graph packages them up in a format we can access
+The Loops-ForEach-Support.json nodegraph must be imported for these functions to work. Unfortunately VNyan plugins cannot directly access (T)Arrays, so this graph packages them up in a format we can access. Unfortunately because of this SessionID and delay parameters cannot be set in the trigger name with a ; This can only be fixed once VNyan supports direct access to (T)Arrays.
 
 ```_lum_loop_foreach``` - Loop through an array  
 text 1 - Name of the array to loop through  
 text 2 - Trigger to call every time we loop  
 text 3 - Trigger to call once we exit the loop  
 number 1 - Delay in ms between loops, default 1000 (1sec) set to -1 for no delay  
-number 2 - 0 if looping, 1 once done  
 number 3 (optional) - Session ID  
-
-```_lum_loop_foreacht``` - Loop through a text array  
-Works exactly the same as ```_lum_loop_foreach```
 
 ### Callback 
 text 1 - The decimal from the specified array
 number 1 - Number of times we have looped  
-number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
+number 2 - 0 if looping, 1 once done  
+number 3 - Session ID
+
+This is roughly equivalent to the following in (Visual) Basic
+
+```
+Dim Array as Float() = GetVNyanArray(Text1)
+For Each Value in Array
+    CallVNyan(Text2)
+Next
+CallVNyan(Text3)
+```
+
+```_lum_loop_foreacht``` - Loop through a text array  
+Works exactly the same as ```_lum_loop_foreach```
 
 ## While / Until
 ```_lum_loop_whileLT``` - While specified decimal is less than specified value (exits once greater than or equal)  
