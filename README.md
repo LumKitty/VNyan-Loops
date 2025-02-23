@@ -60,7 +60,7 @@ CallVNyan(Text3)
 ```_lum_loop_foreacht``` - Loop through a text array  
 Works exactly the same as ```_lum_loop_foreach```
 
-## While / Until
+## While / DoWhile / Until
 ```_lum_loop_whileLT``` - While specified decimal is less than specified value (exits once greater than or equal)  
 text 1 - Name of the decimal to check  
 text 2 - Trigger to call repeatedly while condition is true  
@@ -83,12 +83,12 @@ text 1 - Value of of decimal we're checking
 ```_lum_loop_whileGE``` - Same but we check if greater than or equal  
 ```_lum_loop_whileEQ``` - Same but we check if the value is exactly equal *This will be rounded to an integer before checking*  
 ```_lum_loop_whileNE``` - Same but we check if the value is not equal *This will be rounded to an integer before checking*  
+```_lum_loop_whileTE``` - Same as EQ but compares text instead of numbers  
+```_lum_loop_whileTN``` - Same as TN but compares text instead of numbers
 
-```_lum_loop_untilLT``` - Similar to while, except guaranteed to run once, also runs UNTIL specified specified decimal is less than (runs if greater than or equal)  
-```_lum_loop_untilLE```  
-```_lum_loop_untilGT```  
-```_lum_loop_untilGE```  
-```_lum_loop_untilNE```  
+```_lum_loop_dowhileXX``` - where XX can be LE, GT etc. Same as while except guaranteed to run once
+
+```_lum_loop_untilXX``` - Similar to while, except guaranteed to run once, also runs UNTIL specified specified decimal is less than (i.e. untilLE runs if the value is greater than or equal)  
 
 These triggers are roughly equivalent to doing this in (Visual) Basic:
 ```
@@ -96,6 +96,12 @@ These triggers are roughly equivalent to doing this in (Visual) Basic:
 While (GetVNyanParam(text1) < num1)
   CallVNyan(text2)
 Wend
+CallVNyan(text3)
+
+# _lum_loop_dowhileLT
+Do
+  CallVNyan(text2)
+While (GetVNyanParam(text1) < num1)
 CallVNyan(text3)
 
 # _lum_loop_untilLT
@@ -110,9 +116,9 @@ The name LT, LE, GT, GT, EQ and NE were chosen to match the comparison operators
 While and Until loops have a maximum number of times they can run until they force exit. This can be changed by appending extra parameters
 Call with e.g. ```_lum_loop_whileLE;delay=69;ttl=420```  
 Delay - in ms between loops (default 1000ms i.e. 1 second)  
-TTL - number of loops before we kill it off anyway (set to -1 to disable (at your own risk)  
+TTL - number of loops before we kill it off anyway (set to -1 to disable (at your own risk) - only applies to while/dowhile/until loops  
 
-WARNING: Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. For for loops this is less of an issue, provided you only act on the output of the trigger, and not on any parameters a delay of 1 should be safe. Technically you can run a for loop with a delay of zero, but unless it is a very short loop this is likely to cause your model to stutter.  
+WARNING: Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. This is less of an issue for For and ForEach loops, provided you only act on the output of the trigger and not on any parameters a delay of 1 should be safe. Technically you can run a For or ForEach loop with a delay of zero, but unless it is a very short loop this is likely to cause your model to stutter.  
 
 ## Troubleshooting
 Install my VNyan-Debug plugin from https://github.com/LumKitty/VNyan-Debug to see loop status messages in the console
