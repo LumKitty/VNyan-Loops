@@ -19,8 +19,8 @@ number 3 (optional) - Increment - we will add this value to the counter every lo
 While the loop index is stored into the specified decimal it is NOT read. If you need to mess with the index at runtime, use a while loop instead.
 
 ### Callback 
-number 1 - Number of times we have looped  
-number 2 - The current loop index  
+number 1 - The current loop index  
+number 2 - Number of times we have looped  
 number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
 
 This is rougly equivalent to doing the following in (Visual) Basic
@@ -43,8 +43,7 @@ number 3 (optional) - Session ID
 
 ### Callback 
 text 1 - The decimal from the specified array
-number 1 - Number of times we have looped  
-number 2 - 0 if looping, 1 once done  
+number 2 - Number of times we have looped  (-1 if done)
 number 3 - Session ID
 
 This is roughly equivalent to the following in (Visual) Basic
@@ -70,11 +69,7 @@ number 2 - Divisor. If you need to compare a specific decimal set this. We will 
 number 3 - Session ID, will be passed to the triggers we call  
 
 ### Callback 
-number 1 - Number of times we have looped  
-number 2 - 
-  0 - We are looping
-  1 - This is a call to the exit trigger
-  2 - This is a call to the exit trigger because TTL expired  
+number 2 - Number of times we have looped (-1 if done, -2 if TTL expired)  
 number 3 - Session ID  
 text 1 - Value of of decimal we're checking
 
