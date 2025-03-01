@@ -8,7 +8,7 @@ namespace VNyan_Loops
 {
     public class VNyan_Loops : MonoBehaviour, VNyanInterface.ITriggerHandler
     {
-        const string Version = "1.0-RC1";
+        const string Version = "1.0-RC2";
         enum Operation
         {
             Unknown,
@@ -100,7 +100,7 @@ namespace VNyan_Loops
                 DateTime WaitTime = DateTime.Now;
                 if (Until)
                 {
-                    CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                    CallVNyan(LoopTrigger, 0,Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
@@ -108,7 +108,7 @@ namespace VNyan_Loops
                 {
                     while (Runs < TTL && !CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
                     {
-                        CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
                         Runs++;
                         WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                     }
@@ -117,7 +117,7 @@ namespace VNyan_Loops
                 {
                     while (!CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
                     {
-                        CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
                         Runs++;
                         WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                     }
@@ -126,12 +126,12 @@ namespace VNyan_Loops
                 if (Runs < TTL)
                 {
                     Log("Loop ended normally.");
-                    CallVNyan(ExitTrigger, Runs, 1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                    CallVNyan(ExitTrigger, 0, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
                 }
                 else
                 {
                     Log("Loop ended (TTL expired)");
-                    CallVNyan(ExitTrigger, Runs, 2, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                    CallVNyan(ExitTrigger, 0, -2,  SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
                 }
             }
             catch (Exception e)
@@ -151,7 +151,7 @@ namespace VNyan_Loops
 
                 if (Until)
                 {
-                    CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanText(TextParamName).ToString(), "", "");
+                    CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName).ToString(), "", "");
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
@@ -159,7 +159,7 @@ namespace VNyan_Loops
                 {
                     while (Runs < TTL && !CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
                     {
-                        CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanText(TextParamName), "", "");
+                        CallVNyan(LoopTrigger, 0, Runs,  SessionID, GetVNyanText(TextParamName), "", "");
                         Runs++;
                         WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                     }
@@ -168,7 +168,7 @@ namespace VNyan_Loops
                 {
                     while (!CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
                     {
-                        CallVNyan(LoopTrigger, Runs, 0, SessionID, GetVNyanText(TextParamName), "", "");
+                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName), "", "");
                         Runs++;
                         WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                     }
@@ -177,12 +177,12 @@ namespace VNyan_Loops
                 if (Runs < TTL)
                 {
                     Log("Loop ended normally.");
-                    CallVNyan(ExitTrigger, Runs, 1, SessionID, GetVNyanText(TextParamName), "", "");
+                    CallVNyan(ExitTrigger, Runs, -1, SessionID, GetVNyanText(TextParamName), "", "");
                 }
                 else
                 {
                     Log("Loop ended (TTL expired)");
-                    CallVNyan(ExitTrigger, Runs, 2, SessionID, GetVNyanText(TextParamName), "", "");
+                    CallVNyan(ExitTrigger, Runs, -2, SessionID, GetVNyanText(TextParamName), "", "");
                 }
             }
             catch (Exception e)
@@ -201,13 +201,13 @@ namespace VNyan_Loops
 
                 foreach (string TextValue in TextValues) 
                 {
-                    CallVNyan(LoopTrigger, Runs, 0, SessionID, TextValue, "", "");
+                    CallVNyan(LoopTrigger, 0, Runs, SessionID, TextValue, "", "");
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
 
                 Log("Loop ended normally.");
-                CallVNyan(ExitTrigger, Runs, 1, SessionID, "", "", "");
+                CallVNyan(ExitTrigger, 0, -1, SessionID, "", "", "");
             }
             catch (Exception e)
             {
@@ -222,19 +222,19 @@ namespace VNyan_Loops
             for (int n = StartValue; !CompareDecimals(n, TargetValue, Operation); n = n + Step)
             {
                 if (DecimalName.Length > 0) { VNyanInterface.VNyanInterface.VNyanParameter.setVNyanParameterFloat(DecimalName, (float)n); }
-                CallVNyan(LoopTrigger, Runs, n, SessionID, "", "", "");
+                CallVNyan(LoopTrigger, n, Runs, SessionID, "", "", "");
                 Runs++;
                 Thread.Sleep(Delay);
             }
             Log("Loop ended normally.");
-            CallVNyan(ExitTrigger, Runs, TargetValue, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+            CallVNyan(ExitTrigger, TargetValue, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
         }
 
         public void triggerCalled(string name, int int1, int int2, int int3, string text1, string text2, string text3)
         {
             try
             {
-                if (name.Substring(0, 10) == "_lum_loop_")
+                if (name.Length > 11 && name.Substring(0, 10) == "_lum_loop_")
                 {
                     Log("Loops detected");
                     string[] Parameters = name.Split(';');  // _lum_loop_whileLT;delay=100;ttl=50
@@ -290,12 +290,12 @@ namespace VNyan_Loops
                             if (int2 < int1)
                             {
                                 if (int3 >= 0) { int3 = -1; }
-                                Task.Run(() => ForLoop(text2, text3, text1, int1, int2, int3, Delay, Operation.LE, SessionID));
+                                Task.Run(() => ForLoop(text2, text3, text1, int1, int2, int3, Delay, Operation.LT, SessionID));
                             }
                             else if (int2 > int1)
                             {
                                 if (int3 <= 0) { int3 = 1; }
-                                Task.Run(() => ForLoop(text2, text3, text1, int1, int2, int3, Delay, Operation.GE, SessionID));
+                                Task.Run(() => ForLoop(text2, text3, text1, int1, int2, int3, Delay, Operation.GT, SessionID));
                             }
                             else
                             {
