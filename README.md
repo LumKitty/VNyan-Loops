@@ -20,7 +20,7 @@ While the loop index is stored into the specified decimal it is NOT read. If you
 
 ### Callback 
 number 1 - The current loop index  
-number 2 - Number of times we have looped  
+number 2 - Number of times we have looped (-1 if done)  
 number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
 
 This is rougly equivalent to doing the following in (Visual) Basic
@@ -42,9 +42,9 @@ number 1 (optional) - Delay in ms between loops, default 1000 (1sec) set to -1 f
 number 3 (optional) - Session ID  
 
 ### Callback 
-text 1 - The decimal from the specified array
-number 2 - Number of times we have looped  (-1 if done)
-number 3 - Session ID
+text 1 - The decimal from the specified array  
+number 2 - Number of times we have looped  (-1 if done)  
+number 3 - Session ID  
 
 This is roughly equivalent to the following in (Visual) Basic
 
