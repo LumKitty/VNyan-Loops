@@ -115,10 +115,10 @@ SessionID - Can be specified in the trigger name, (as well as via a node for For
 TTL - number of loops before we kill it off anyway (set to -1 to disable (at your own risk) - only applies to while/dowhile/until loops  
 
 ## Warnings (please read this)
-Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. This is less of an issue for For and ForEach loops, provided you only act on the output of the trigger and not on any parameters a delay of 1 should be safe. 
-Overriding or disabling the TTL can cause a loop to run indefinitely. Currently there is no way to stop such a loop (coming in 1.1), so you will need to restart VNyan. You are responsible for ensuring that all loops have a working exit condition.  
-While a For or ForEach loop can be run with a delay of zero. This must only be used for very small loops as they will hang VNyan while they run. If you expect your loop to take more than 10-15ms to process you will cause your model to stutter.  
-To prepare for v1.1. Please do not run multiple loops in parallel set to the same SessionID, and do not rely on loops getting a session ID of zero if one is not specified (see the 1.0 release notes for more info)
+* Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. This is less of an issue for For and ForEach loops, provided you only act on the output of the trigger and not on any parameters a delay of 1 should be safe. 
+* Overriding or disabling the TTL can cause a loop to run indefinitely. Currently there is no way to stop such a loop (coming in 1.1), so you will need to restart VNyan. You are responsible for ensuring that all loops have a working exit condition.  
+* While a For or ForEach loop can be run with a delay of zero. This must only be used for very small loops as they will hang VNyan while they run. If you expect your loop to take more than 10-15ms to process you will cause your model to stutter.  
+* To prepare for v1.1. Please do not run multiple loops in parallel set to the same SessionID, and do not rely on loops getting a session ID of zero if one is not specified (see the 1.0 release notes for more info)
 
 ## Troubleshooting
 Install my VNyan-Debug plugin from https://github.com/LumKitty/VNyan-Debug to see loop status messages in the console
