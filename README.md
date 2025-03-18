@@ -107,10 +107,11 @@ CallVNyan(text3)
 ```
 The name LT, LE, GT, GT, EQ and NE were chosen to match the comparison operators in Powershell
 
-## Delay and TTL
-While and Until loops have a maximum number of times they can run until they force exit. This can be changed by appending extra parameters
-Call with e.g. ```_lum_loop_whileLE;delay=69;ttl=420```  
+## Delay, SessionID and TTL
+While and Until loops have a maximum number of times they can run until they force exit. This can be changed by appending extra parameters  
+Call with e.g. ```_lum_loop_whileLE;delay=69;ttl=420;sessionid=8008135```  
 Delay - in ms between loops (default 1000ms i.e. 1 second)  
+SessionID - Can be specified in the trigger name, (as well as via a node for For loops) and will be output on node3 to allow you to identify a specific loop  
 TTL - number of loops before we kill it off anyway (set to -1 to disable (at your own risk) - only applies to while/dowhile/until loops  
 
 WARNING: Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. This is less of an issue for For and ForEach loops, provided you only act on the output of the trigger and not on any parameters a delay of 1 should be safe. Technically you can run a For or ForEach loop with a delay of zero, but unless it is a very short loop this is likely to cause your model to stutter.  
