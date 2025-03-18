@@ -79,7 +79,7 @@ text 1 - Value of of decimal we're checking
 ```_lum_loop_whileEQ``` - Same but we check if the value is exactly equal *This will be rounded to an integer before checking*  
 ```_lum_loop_whileNE``` - Same but we check if the value is not equal *This will be rounded to an integer before checking*  
 ```_lum_loop_whileTE``` - Same as EQ but compares text instead of numbers  
-```_lum_loop_whileTN``` - Same as TN but compares text instead of numbers
+```_lum_loop_whileTN``` - Same as NE but compares text instead of numbers
 
 ```_lum_loop_dowhileXX``` - where XX can be LE, GT etc. Same as while except guaranteed to run once
 
