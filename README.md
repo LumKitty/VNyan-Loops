@@ -5,7 +5,9 @@ Adds triggers to VNyan to do loops without having to manually implement them in 
 
 
 ## Installation
-Download the attached zip file and unpack to VNyan\Items\Assemblies
+1. Download the attached zip file and unpack to VNyan\Items\Assemblies  
+2. Enable plugins in VNyan: Settings -> Misc -> Additional Settings -> Allow 3rd party mods/plugins  
+3. Restart VNyan  
 
 ## For
 ```_lum_loop_for``` - Loop from one number to another  
