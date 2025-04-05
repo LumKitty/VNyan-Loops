@@ -71,9 +71,11 @@ number 2 - Divisor. If you need to compare a specific decimal set this. We will 
 number 3 - Session ID, will be passed to the triggers we call  
 
 ### Callback 
+number 1 - Value of the decimal we're checking *ROUNDED TO THE NEAREST INTEGER*  
 number 2 - Number of times we have looped (-1 if done, -2 if TTL expired)  
 number 3 - Session ID  
-text 1 - Value of of decimal we're checking
+text 1 - Value of the decimal we're checking (as a string that can be converted back to a decimal)  
+text 2 - Name of the decimal we're checking  
 
 ```_lum_loop_whileLE``` - Same but we check less than or equal  
 ```_lum_loop_whileGT``` - Same but we check if greater than  

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,17 @@ namespace VNyan_Loops
 {
     public class VNyan_Loops : MonoBehaviour, VNyanInterface.ITriggerHandler
     {
-        const string Version = "1.0-RC2";
+        const string Version = "1.1-RC1";
+        Dictionary<int, LoopStatus> ActiveLoops = new Dictionary<int, LoopStatus>();
+        
+        enum LoopStatus
+        {
+            //Created,
+            Running,
+            CancelRequested,
+            Finished
+        }
+
         enum Operation
         {
             Unknown,
@@ -21,6 +32,60 @@ namespace VNyan_Loops
             TE,
             TN
         }
+        int GetUniqueSessionID(int SessionID)
+        {
+            if (SessionID == 0) {
+                bool done = false;
+                SessionID = 10000;
+                do
+                {
+                    SessionID++;
+                    if (ActiveLoops.ContainsKey(SessionID))
+                    {
+                        if (ActiveLoops[SessionID] == LoopStatus.Finished)
+                        {
+                            ActiveLoops[SessionID] = LoopStatus.Running;
+                            done = true;
+                        }
+                    }
+                    else
+                    {
+                        ActiveLoops.Add(SessionID, LoopStatus.Running);
+                        done = true;
+                    }
+                } while (!done);
+            }
+            else
+            {
+                if (ActiveLoops.ContainsKey(SessionID))
+                {
+                    if (ActiveLoops[SessionID] == LoopStatus.Finished)
+                    {
+                        ActiveLoops[SessionID] = LoopStatus.Running;
+                    }
+                    else
+                    {
+                        KillLoop(SessionID, true);
+                    }
+                }
+                else
+                {
+                    ActiveLoops.Add(SessionID, LoopStatus.Running);
+                }
+            }
+            
+            return SessionID;
+        }
+
+        /*void CheckLoopStartup(int SessionID)
+        {
+            Log("Checking session log for " + SessionID);
+            if (ActiveLoops[SessionID] != LoopStatus.Created)
+            {
+                KillLoop(SessionID, true);
+            }
+            ActiveLoops[SessionID] = LoopStatus.Running;
+        }*/
 
         void CallVNyan(string TriggerName, int int1, int int2, int int3, string Text1, string Text2, string Text3)
         {
@@ -43,7 +108,7 @@ namespace VNyan_Loops
         }
         void Log(string Message)
         {
-            CallVNyan("_lum_dbg_log", 0, 0, 0, Message, "", "");
+            CallVNyan("_lum_dbg_raw", 0, 0, 0, Message, "", "");
         }
         void ErrorHandler(Exception e)
         {
@@ -60,7 +125,6 @@ namespace VNyan_Loops
                 ErrorHandler(e);
             }
         }
-
         bool CompareDecimals(float lhs, float rhs, Operation oper)
         {
             Log("LOOP: Comparing " + lhs.ToString() + " "+oper.ToString()+" " + rhs.ToString());
@@ -89,61 +153,82 @@ namespace VNyan_Loops
             Log("No operation passed. If you see this something bad happened!");
             return true;
         }
-
         async Task WhileLoop(string LoopTrigger, string ExitTrigger, string DecimalName, float TargetValue, int Delay, int TTL, Operation Operation, int SessionID, bool Until)
-        {
+        { // Number version
             try
             {
+                const string LoopType = "WhileNumber";
+                SessionID = GetUniqueSessionID(SessionID);
                 int Runs = 0;
                 if (Until) { Log("Until loop started"); } else { Log("Until loop started"); }
                 Log("LoopTrigger=" + LoopTrigger + "; ExitTrigger=" + ExitTrigger + "Param=" + DecimalName + "; TargetValue=" + TargetValue.ToString() + "; Operation=" + Operation.ToString() + "; SessionID=" + SessionID.ToString());
                 DateTime WaitTime = DateTime.Now;
                 if (Until)
                 {
-                    CallVNyan(LoopTrigger, 0,Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+                    CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", LoopType);
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
-                if (TTL > 0)
+                if (ActiveLoops[SessionID] != LoopStatus.CancelRequested)
                 {
-                    while (Runs < TTL && !CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
+                    if (TTL > 0)
                     {
-                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
-                        Runs++;
-                        WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        while (Runs < TTL && !CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
+                        {
+                            CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
+                            Runs++;
+                            WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                            if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                            {
+                                break;
+                            }
+                        }
                     }
+                    else
+                    {
+                        while (!CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
+                        {
+                            CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
+                            Runs++;
+                            WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                            if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                            {
+                                break;
+                            }
+                        }
+                        Runs = TTL - 1; // To ensure the "ended normally" condition is met when running without TTL
+                    }
+                }
+                if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                {
+                    Log("Loop " + SessionID.ToString() + " cancelled.");
                 }
                 else
                 {
-                    while (!CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
+                    if (Runs < TTL)
                     {
-                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
-                        Runs++;
-                        WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        Log("Loop " + SessionID.ToString() + " ended normally.");
+                        CallVNyan(ExitTrigger, 0, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
                     }
-                    Runs = TTL - 1; // To ensure the "ended normally" condition is met when running without TTL
+                    else
+                    {
+                        Log("Loop " + SessionID.ToString() + " ended (TTL expired)");
+                        CallVNyan(ExitTrigger, 0, -2, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
+                    }
                 }
-                if (Runs < TTL)
-                {
-                    Log("Loop ended normally.");
-                    CallVNyan(ExitTrigger, 0, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
-                }
-                else
-                {
-                    Log("Loop ended (TTL expired)");
-                    CallVNyan(ExitTrigger, 0, -2,  SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
-                }
+                ActiveLoops[SessionID] = LoopStatus.Finished;
             }
             catch (Exception e)
             {
                 ErrorHandler(e);
             }
         }
-
         async Task WhileLoop(string LoopTrigger, string ExitTrigger, string TextParamName, string TargetValue, int Delay, int TTL, Operation Operation, int SessionID, bool Until)
-        {
+        { // Text version
             try
             {
+                const string LoopType = "WhileText";
+                SessionID = GetUniqueSessionID(SessionID);
                 int Runs = 0;
                 if (Until) { Log("Until loop started"); } else { Log("Until loop started"); }
                 Log("LoopTrigger=" + LoopTrigger + "; ExitTrigger=" + ExitTrigger + "Param=" + TextParamName + "; TargetValue=" + TargetValue.ToString() + "; Operation=" + Operation.ToString() + "; SessionID=" + SessionID.ToString());
@@ -151,83 +236,148 @@ namespace VNyan_Loops
 
                 if (Until)
                 {
-                    CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName).ToString(), "", "");
+                    CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName).ToString(), TextParamName, LoopType);
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
-                if (TTL > 0)
+                if (ActiveLoops[SessionID] != LoopStatus.CancelRequested)
                 {
-                    while (Runs < TTL && !CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
+                    if (TTL > 0)
                     {
-                        CallVNyan(LoopTrigger, 0, Runs,  SessionID, GetVNyanText(TextParamName), "", "");
-                        Runs++;
-                        WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        while (Runs < TTL && !CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
+                        {
+                            CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName), TextParamName, LoopType);
+                            Runs++;
+                            WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        }
                     }
+                    else
+                    {
+                        while (!CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
+                        {
+                            CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName), TextParamName, LoopType);
+                            Runs++;
+                            WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        }
+                        Runs = TTL - 1; // To ensure the "ended normally" condition is met when running without TTL
+                    }
+                }
+                if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                {
+                    Log("Loop " + SessionID.ToString() + " cancelled.");
                 }
                 else
                 {
-                    while (!CompareText(GetVNyanText(TextParamName), TargetValue, Operation))
+                    if (Runs < TTL)
                     {
-                        CallVNyan(LoopTrigger, 0, Runs, SessionID, GetVNyanText(TextParamName), "", "");
-                        Runs++;
-                        WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                        Log("Loop " + SessionID.ToString() + " ended normally.");
+                        CallVNyan(ExitTrigger, Runs, -1, SessionID, GetVNyanText(TextParamName), "", LoopType);
                     }
-                    Runs = TTL - 1; // To ensure the "ended normally" condition is met when running without TTL
+                    else
+                    {
+                        Log("Loop " + SessionID.ToString() + " ended (TTL expired)");
+                        CallVNyan(ExitTrigger, Runs, -2, SessionID, GetVNyanText(TextParamName), "", LoopType);
+                    }
                 }
-                if (Runs < TTL)
-                {
-                    Log("Loop ended normally.");
-                    CallVNyan(ExitTrigger, Runs, -1, SessionID, GetVNyanText(TextParamName), "", "");
-                }
-                else
-                {
-                    Log("Loop ended (TTL expired)");
-                    CallVNyan(ExitTrigger, Runs, -2, SessionID, GetVNyanText(TextParamName), "", "");
-                }
+                ActiveLoops[SessionID] = LoopStatus.Finished;
             }
             catch (Exception e)
             {
                 ErrorHandler(e);
             }
         }
-
         async Task ForEachLoop(string LoopTrigger, string ExitTrigger, string[] TextValues, int Delay, int SessionID)
         {
             try
             {
+                const string LoopType = "ForEach";
+                SessionID = GetUniqueSessionID(SessionID);
                 int Runs = 0;
-                Log("LoopTrigger=" + LoopTrigger + "; ExitTrigger=" + ExitTrigger + "; ArrayEntries=" + TextValues.Count() + ";Delay="+Delay+"; SessionID=" + SessionID.ToString());
+                Log("LoopTrigger=" + LoopTrigger + "; ExitTrigger=" + ExitTrigger + "; ArrayEntries=" + TextValues.Count() + ";Delay=" + Delay + "; SessionID=" + SessionID.ToString());
                 DateTime WaitTime = DateTime.Now;
 
-                foreach (string TextValue in TextValues) 
+                foreach (string TextValue in TextValues)
                 {
-                    CallVNyan(LoopTrigger, 0, Runs, SessionID, TextValue, "", "");
+                    CallVNyan(LoopTrigger, 0, Runs, SessionID, TextValue, "", LoopType);
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                    if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                    {
+                        break;
+                    }
                 }
-
-                Log("Loop ended normally.");
-                CallVNyan(ExitTrigger, 0, -1, SessionID, "", "", "");
+                if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                {
+                    Log("Loop " + SessionID.ToString() + " cancelled.");
+                }
+                else
+                {
+                    Log("Loop " + SessionID.ToString() + " ended normally.");
+                    CallVNyan(ExitTrigger, 0, -1, SessionID, "", "", LoopType);
+                }
+                ActiveLoops[SessionID] = LoopStatus.Finished;
             }
             catch (Exception e)
             {
                 ErrorHandler(e);
             }
         }
-
         async Task ForLoop(string LoopTrigger, string ExitTrigger, string DecimalName, int StartValue, int TargetValue, int Step, int Delay, Operation Operation, int SessionID)
         {
-            Log("For loop from " + StartValue.ToString() + " to " + TargetValue.ToString() + "; Step: " + Step.ToString() + "; Comparison: " + Operation.ToString());
+            const string LoopType = "For";
+            SessionID = GetUniqueSessionID(SessionID);
+            Log("For loop "+SessionID.ToString()+" from " + StartValue.ToString() + " to " + TargetValue.ToString() + "; Step: " + Step.ToString() + "; Comparison: " + Operation.ToString());
             int Runs = 0;
+            DateTime WaitTime = DateTime.Now;
             for (int n = StartValue; !CompareDecimals(n, TargetValue, Operation); n = n + Step)
             {
                 if (DecimalName.Length > 0) { VNyanInterface.VNyanInterface.VNyanParameter.setVNyanParameterFloat(DecimalName, (float)n); }
-                CallVNyan(LoopTrigger, n, Runs, SessionID, "", "", "");
+                CallVNyan(LoopTrigger, n, Runs, SessionID, "", "", LoopType);
                 Runs++;
-                Thread.Sleep(Delay);
+                WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
+                if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+                {
+                    break;
+                }
             }
-            Log("Loop ended normally.");
-            CallVNyan(ExitTrigger, TargetValue, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", "");
+            if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
+            {
+                Log("Loop "+SessionID.ToString()+" cancelled.");
+            }
+            else
+            {
+                Log("Loop "+SessionID.ToString()+" ended normally.");
+                CallVNyan(ExitTrigger, TargetValue, -1, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", LoopType);
+            }
+            ActiveLoops[SessionID] = LoopStatus.Finished;
+        }
+
+        void KillLoop(int SessionID, bool WaitForTermination)
+        {
+            Log("KillLoop called. SessionID: " + SessionID.ToString());
+            if (ActiveLoops.ContainsKey(SessionID))
+            {
+                if (ActiveLoops[SessionID] != LoopStatus.Finished) {
+                    Log("Active loop found for sessionID: " + SessionID.ToString());
+                    ActiveLoops[SessionID] = LoopStatus.CancelRequested;
+                    if (WaitForTermination)
+                    {
+                        Log("Killing loop " + SessionID + "and waiting for termination");
+                        while (ActiveLoops[SessionID] != LoopStatus.Finished)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
+                    else
+                    {
+                        Log("Killing loop " + SessionID);
+                    }
+                } 
+            } 
+            else
+            {
+                Log("Couldn't kill loop " + SessionID + " as it does not exist");
+            }
         }
 
         public void triggerCalled(string name, int int1, int int2, int int3, string text1, string text2, string text3)
@@ -267,7 +417,7 @@ namespace VNyan_Loops
                                 break;
                                 case "sessionid":
                                     SessionID = int.Parse(ParamTemp[1]);
-                                    Log("Session ID set to: " + Delay.ToString());
+                                    Log("Session ID set to: " + SessionID.ToString());
                                 break;
                                 case "val":
                                     TextTargetValue = ParamTemp[1];
@@ -285,11 +435,20 @@ namespace VNyan_Loops
                     Log("Checking: " + LoopType);
                     switch (LoopType)
                     {
+                        case "_kill":
+                            if (SessionID == 0)
+                            {
+                                SessionID = int3;
+                            }
+                            KillLoop(SessionID, false);
+                        break;
                         case "_for":
+
                             Log("For loop detected");
                             if (int2 < int1)
                             {
                                 if (int3 >= 0) { int3 = -1; }
+                                
                                 Task.Run(() => ForLoop(text2, text3, text1, int1, int2, int3, Delay, Operation.LT, SessionID));
                             }
                             else if (int2 > int1)
@@ -303,6 +462,7 @@ namespace VNyan_Loops
                             }
                         break;
                         case "_foreachcsv":
+                            if (SessionID == 0) { SessionID = int3; }
                             if (int1 != 0)
                             {
                                 Delay = int1;
@@ -316,6 +476,7 @@ namespace VNyan_Loops
                         break;
 
                         default:
+                            if (SessionID == 0) { SessionID = int3; }
                             CompType = Parameters[0].Substring(Parameters[0].Length - 2).ToUpper();
                             LoopType = Parameters[0].Substring(9, Parameters[0].Length - 11).ToLower();
                             Log("Processing loop type: " + LoopType);
@@ -358,16 +519,15 @@ namespace VNyan_Loops
                             {
                                 case "_while":
 
-
                                     if (Oper != Operation.Unknown)
                                     {
                                         if (Oper != Operation.TE && Oper != Operation.TN)
                                         {
-                                            Task.Run(() => WhileLoop(text2, text3, text1, TargetValue, Delay, TTL, Oper, int3, false));
+                                            Task.Run(() => WhileLoop(text2, text3, text1, TargetValue, Delay, TTL, Oper, SessionID, false));
                                         }
                                         else
                                         {
-                                            Task.Run(() => WhileLoop(text2, text3, text1, TextTargetValue, Delay, TTL, Oper, int3, false));
+                                            Task.Run(() => WhileLoop(text2, text3, text1, TextTargetValue, Delay, TTL, Oper, SessionID, false));
                                         }
                                     }
                                     else
@@ -376,16 +536,15 @@ namespace VNyan_Loops
                                     }
                                     break;
                                 case "_dowhile":
-
                                     if (Oper != Operation.Unknown)
                                     {
                                         if (Oper != Operation.TE && Oper != Operation.TN)
                                         {
-                                            Task.Run(() => WhileLoop(text2, text3, text1, TargetValue, Delay, TTL, Oper, int3, true));
+                                            Task.Run(() => WhileLoop(text2, text3, text1, TargetValue, Delay, TTL, Oper, SessionID, true));
                                         }
                                         else
                                         {
-                                            Task.Run(() => WhileLoop(text2, text3, text1, TextTargetValue, Delay, TTL, Oper, int3, true));
+                                            Task.Run(() => WhileLoop(text2, text3, text1, TextTargetValue, Delay, TTL, Oper, SessionID, true));
                                         }
                                     }
                                     else
