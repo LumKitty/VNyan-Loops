@@ -24,6 +24,7 @@ While the loop index is stored into the specified decimal it is NOT read. If you
 number 1 - The current loop index  
 number 2 - Number of times we have looped (-1 if done)  
 number 3 - Session ID (set this with e.g. ```_lum_loop_for;sessionid=69```)  
+text 3 - Loop type (hardcoded to: for)  
 
 This is rougly equivalent to doing the following in (Visual) Basic
 ```
@@ -45,6 +46,8 @@ number 3 (optional) - Session ID
 
 ### Callback 
 text 1 - The decimal from the specified array  
+text 3 - Loop type (hardcoded to: foreach)  
+number 1 - Value of the current decimal in the array *ROUNDED DOWN TO THE NEAREST INTEGER*  
 number 2 - Number of times we have looped  (-1 if done)  
 number 3 - Session ID  
 
@@ -59,7 +62,7 @@ CallVNyan(Text3)
 ```
 
 ```_lum_loop_foreacht``` - Loop through a text array  
-Works exactly the same as ```_lum_loop_foreach```
+Works exactly the same as ```_lum_loop_foreach``` except number 1 will be blank (unless the TArray contains numbers)
 
 ## While / DoWhile / Until
 ```_lum_loop_whileLT``` - While specified decimal is less than specified value (exits once greater than or equal)  
@@ -71,11 +74,12 @@ number 2 - Divisor. If you need to compare a specific decimal set this. We will 
 number 3 - Session ID, will be passed to the triggers we call  
 
 ### Callback 
-number 1 - Value of the decimal we're checking *ROUNDED TO THE NEAREST INTEGER*  
+number 1 - Value of the decimal we're checking *ROUNDED DOWN TO THE NEAREST INTEGER*  
 number 2 - Number of times we have looped (-1 if done, -2 if TTL expired)  
 number 3 - Session ID  
 text 1 - Value of the decimal we're checking (as a string that can be converted back to a decimal)  
 text 2 - Name of the decimal we're checking  
+text 3 - Loop type (hardcoded to: while - even if you used dowhile or until)  
 
 ```_lum_loop_whileLE``` - Same but we check less than or equal  
 ```_lum_loop_whileGT``` - Same but we check if greater than  
@@ -111,20 +115,24 @@ CallVNyan(text3)
 ```
 The name LT, LE, GT, GT, EQ and NE were chosen to match the comparison operators in Powershell
 
+## Kill an existing loop
+```_lum_loop_kill``` - Stop the specified loop from running
+number 3 - Session ID to kill
+
 ## Delay, SessionID and TTL
 Extra parameters can be set when calling triggers, separated by semicolons.
 e.g. ```_lum_loop_whileLE;delay=69;ttl=420;sessionid=8008135```  
 All loop types (except ForEach) support setting the delay and Session ID this way. While loops also support the TTL parameter
 
 Delay - in ms between loops (default 1000ms i.e. 1 second)  
-SessionID - Can be specified in the trigger name, (as well as via a node for For loops) and will be output on node3 to allow you to identify a specific loop  
+SessionID - Can be specified in the trigger name, (as well as via a node for For loops) and will be output on node3 to allow you to identify a specific loop. If no session ID is specified, a unique ID (starting from 10001) will be generated for you. SessionIDs can be re-used once the previous loop that was using it is finished.    
 TTL - By default a while/dowhile/ultil loop will be killed after 1000 loops. This can be changed to a different value (set to -1 to disable (at your own risk). This does not apply to For/ForEach loops as these have a defined start and end.  
 
 ## Warnings (please read this)
 * Setting the delay to less than two frames (approx 40ms if you are running at a consistent 60fps) can cause unexpected results. VNyan does not always update parameters instantly, so you could e.g. call a trigger an additional time even after setting it to the exit condition. This is less of an issue for For and ForEach loops, provided you only act on the output of the trigger and not on any parameters a delay of 1 should be safe. 
 * Disabling the TTL can cause a loop to run indefinitely. Currently there is no way to stop such a loop (coming in 1.1), so you will need to restart VNyan. You are responsible for ensuring that all loops have a working exit condition.  
 * While a For or ForEach loop can be run with a delay of zero. This must only be used for very small loops as they will hang VNyan while they run. If you expect your loop to take more than 10-15ms to process you will cause your model to stutter.  
-* To prepare for v1.1. Please do not run multiple loops in parallel set to the same SessionID, and do not rely on loops getting a session ID of zero if one is not specified (see the 1.0 release notes for more info). For most use cases you will not need to use session IDs anyway!  
+* If using v1.0: To prepare for v1.1 please do not run multiple loops in parallel set to the same SessionID, and do not rely on loops getting a session ID of zero if one is not specified (see the 1.0 release notes for more info). For most use cases you will not need to use session IDs anyway!  
 
 ## Troubleshooting
 Install my VNyan-Debug plugin from https://github.com/LumKitty/VNyan-Debug to see loop status messages in the console
