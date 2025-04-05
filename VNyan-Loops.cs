@@ -9,7 +9,7 @@ namespace VNyan_Loops
 {
     public class VNyan_Loops : MonoBehaviour, VNyanInterface.ITriggerHandler
     {
-        const string Version = "1.1-RC1";
+        const string Version = "1.1-RC2";
         Dictionary<int, LoopStatus> ActiveLoops = new Dictionary<int, LoopStatus>();
         
         enum LoopStatus
@@ -31,6 +31,15 @@ namespace VNyan_Loops
             NE,
             TE,
             TN
+        }
+        
+        int Round(float Value)
+        {
+            return (int)Math.Floor(Value);
+        }
+        int Round(decimal Value)
+        {
+            return (int)Math.Floor(Value);
         }
         int GetUniqueSessionID(int SessionID)
         {
@@ -165,7 +174,7 @@ namespace VNyan_Loops
                 DateTime WaitTime = DateTime.Now;
                 if (Until)
                 {
-                    CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", LoopType);
+                    CallVNyan(LoopTrigger, Round(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", LoopType);
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 }
@@ -175,7 +184,7 @@ namespace VNyan_Loops
                     {
                         while (Runs < TTL && !CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
                         {
-                            CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
+                            CallVNyan(LoopTrigger, Round(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
                             Runs++;
                             WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                             if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
@@ -188,7 +197,7 @@ namespace VNyan_Loops
                     {
                         while (!CompareDecimals(GetVNyanDecimal(DecimalName), TargetValue, Operation))
                         {
-                            CallVNyan(LoopTrigger, Convert.ToInt32(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
+                            CallVNyan(LoopTrigger, Round(GetVNyanDecimal(DecimalName)), Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), DecimalName, LoopType);
                             Runs++;
                             WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                             if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
@@ -293,12 +302,21 @@ namespace VNyan_Loops
                 const string LoopType = "ForEach";
                 SessionID = GetUniqueSessionID(SessionID);
                 int Runs = 0;
+                int ConvertedValue;
                 Log("LoopTrigger=" + LoopTrigger + "; ExitTrigger=" + ExitTrigger + "; ArrayEntries=" + TextValues.Count() + ";Delay=" + Delay + "; SessionID=" + SessionID.ToString());
                 DateTime WaitTime = DateTime.Now;
 
                 foreach (string TextValue in TextValues)
                 {
-                    CallVNyan(LoopTrigger, 0, Runs, SessionID, TextValue, "", LoopType);
+                    try
+                    {
+                        ConvertedValue = Round(Decimal.Parse(TextValue));
+                    }
+                    catch
+                    {
+                        ConvertedValue = 0;
+                    }
+                    CallVNyan(LoopTrigger, ConvertedValue, Runs, SessionID, TextValue, "", LoopType);
                     Runs++;
                     WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                     if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
@@ -332,7 +350,7 @@ namespace VNyan_Loops
             for (int n = StartValue; !CompareDecimals(n, TargetValue, Operation); n = n + Step)
             {
                 if (DecimalName.Length > 0) { VNyanInterface.VNyanInterface.VNyanParameter.setVNyanParameterFloat(DecimalName, (float)n); }
-                CallVNyan(LoopTrigger, n, Runs, SessionID, "", "", LoopType);
+                CallVNyan(LoopTrigger, n, Runs, SessionID, GetVNyanDecimal(DecimalName).ToString(), "", LoopType);
                 Runs++;
                 WaitTime = WaitTime.AddMilliseconds(Delay); Thread.Sleep(WaitTime - DateTime.Now);
                 if (ActiveLoops[SessionID] == LoopStatus.CancelRequested)
